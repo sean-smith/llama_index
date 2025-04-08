@@ -66,9 +66,20 @@ class ContextualRerank(BaseNodePostprocessor):
     def class_name(cls) -> str:
         return "ContextualRerank"
 
+    def postprocess_nodes(
+        self,
+        nodes: List[NodeWithScore],
+        instruction: Optional[str] = None,
+        metadata: Optional[List[str]] = None,
+        query_bundle: Optional[QueryBundle] = None,
+    ) -> List[NodeWithScore]:
+        return self._postprocess_nodes(nodes, instruction, metadata, query_bundle)
+
     def _postprocess_nodes(
         self,
         nodes: List[NodeWithScore],
+        instruction: Optional[str] = None,
+        metadata: Optional[List[str]] = None,
         query_bundle: Optional[QueryBundle] = None,
     ) -> List[NodeWithScore]:
         dispatcher.event(
@@ -77,6 +88,8 @@ class ContextualRerank(BaseNodePostprocessor):
             )
         )
 
+        if metadata is not None and len(metadata) != len(nodes):
+            raise ValueError("Length of metadata must be equal to the number of nodes.")
         if query_bundle is None:
             raise ValueError("Missing query bundle in extra info.")
         if len(nodes) == 0:
@@ -100,6 +113,8 @@ class ContextualRerank(BaseNodePostprocessor):
                 top_n=self.top_n,
                 query=query_bundle.query_str,
                 documents=texts,
+                instruction=instruction,
+                metadata=metadata or [],
             )
 
             new_nodes = []

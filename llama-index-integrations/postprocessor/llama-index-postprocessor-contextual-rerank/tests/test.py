@@ -44,7 +44,12 @@ class TestContextualRerank(TestCase):
             client=contextual_client,
         )
 
-        actual_nodes = contextual_rerank.postprocess_nodes(nodes, query_str=query)
+        actual_nodes = contextual_rerank.postprocess_nodes(
+            nodes,
+            query_str=query,
+            instruction="please rerank this information based on most relevant information.",
+            metadata=[],
+        )
         assert len(actual_nodes) == 2
         for actual_node_with_score, expected_node_with_score in zip(
             actual_nodes, expected_nodes
